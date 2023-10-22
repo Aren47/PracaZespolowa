@@ -23,6 +23,8 @@ class TaskManager extends StatefulWidget {
 class _TaskManagerState extends State<TaskManager> {
   List<String> tasks = [];
   TextEditingController taskController = TextEditingController();
+  TextEditingController editTaskController = TextEditingController();
+  int editingIndex = -1;
 
   void addTask() {
     setState(() {
@@ -34,9 +36,28 @@ class _TaskManagerState extends State<TaskManager> {
     });
   }
 
+  void editTask(int index) {
+    setState(() {
+      editingIndex = index;
+      editTaskController.text = tasks[index];
+    });
+  }
+
+  void saveEditedTask(int index) {
+    setState(() {
+      tasks[index] = editTaskController.text;
+      editingIndex = -1;
+      editTaskController.clear();
+    });
+  }
+
   void removeTask(int index) {
     setState(() {
       tasks.removeAt(index);
+      if (editingIndex == index) {
+        editingIndex = -1;
+        editTaskController.clear();
+      }
     });
   }
 
@@ -64,10 +85,24 @@ class _TaskManagerState extends State<TaskManager> {
               itemCount: tasks.length,
               itemBuilder: (context, index) {
                 return ListTile(
-                  title: Text(tasks[index]),
-                  trailing: IconButton(
-                    icon: Icon(Icons.delete),
-                    onPressed: () => removeTask(index),
+                  title: editingIndex == index
+                      ? TextField(
+                          controller: editTaskController,
+                          onEditingComplete: () => saveEditedTask(index),
+                        )
+                      : Text(tasks[index]),
+                  trailing: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      IconButton(
+                        icon: Icon(Icons.edit),
+                        onPressed: () => editTask(index),
+                      ),
+                      IconButton(
+                        icon: Icon(Icons.delete),
+                        onPressed: () => removeTask(index),
+                      ),
+                    ],
                   ),
                 );
               },
