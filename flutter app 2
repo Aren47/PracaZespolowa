@@ -6,20 +6,20 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Task Manager',
+      title: 'Task Manager', // Tytuł aplikacji
       theme: ThemeData(
-        primarySwatch: Colors.blue,
+        primarySwatch: Colors.blue, // Kolor przewodni aplikacji
       ),
-      home: TaskManager(),
+      home: TaskManager(), // Ekran główny
     );
   }
 }
 
 class Task {
-  String name;
-  String status;
+  String name;   // Nazwa zadania
+  String status; // Status zadania
 
-  Task(this.name, this.status);
+  Task(this.name, this.status); // Konstruktor dla obiektu Task
 }
 
 class TaskManager extends StatefulWidget {
@@ -28,44 +28,44 @@ class TaskManager extends StatefulWidget {
 }
 
 class _TaskManagerState extends State<TaskManager> {
-  List<Task> tasks = [];
-  TextEditingController taskController = TextEditingController();
-  int editingIndex = -1;
+  List<Task> tasks = []; // Lista zadan
+  TextEditingController taskController = TextEditingController(); // Kontroler pola tekstowego
+  int editingIndex = -1; // Indeks zadania podczas edycji (domyślnie brak edycji)
 
   void addTask() {
     setState(() {
       String newTaskName = taskController.text;
       if (newTaskName.isNotEmpty) {
-        tasks.add(Task(newTaskName, 'Nowy'));
-        taskController.clear();
+        tasks.add(Task(newTaskName, 'Nowy')); // Dodaj nowe zadanie do listy
+        taskController.clear(); // Wyczyść pole tekstowe po dodaniu zadania
       }
     });
   }
 
   void editTask(int index) {
     setState(() {
-      editingIndex = index;
+      editingIndex = index; // Rozpocznij edycję zadania o określonym indeksie
     });
   }
 
   void saveEditedTask(int index) {
     setState(() {
-      editingIndex = -1;
+      editingIndex = -1; // Zakończ edycję zadania
     });
   }
 
   void removeTask(int index) {
     setState(() {
-      tasks.removeAt(index);
+      tasks.removeAt(index); // Usuń zadanie na podstawie indeksu
       if (editingIndex == index) {
-        editingIndex = -1;
+        editingIndex = -1; // Jeśli edytowane zadanie jest usuwane, zakończ edycję
       }
     });
   }
 
   void changeStatus(int index, String newStatus) {
     setState(() {
-      tasks[index].status = newStatus;
+      tasks[index].status = newStatus; // Zmień status zadania
     });
   }
 
@@ -73,7 +73,7 @@ class _TaskManagerState extends State<TaskManager> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Task Manager'),
+        title: Text('Task Manager'), // Tytuł paska nawigacyjnego
       ),
       body: Column(
         children: <Widget>[
@@ -81,11 +81,11 @@ class _TaskManagerState extends State<TaskManager> {
             padding: const EdgeInsets.all(10.0),
             child: TextField(
               controller: taskController,
-              decoration: InputDecoration(labelText: 'Dodaj nowe zadanie'),
+              decoration: InputDecoration(labelText: 'Dodaj nowe zadanie'), // Pole tekstowe do dodawania zadań
             ),
           ),
           ElevatedButton(
-            onPressed: addTask,
+            onPressed: addTask, // Przycisk "Dodaj zadanie" wywołuje funkcję addTask
             child: Text('Dodaj zadanie'),
           ),
           Expanded(
@@ -93,7 +93,7 @@ class _TaskManagerState extends State<TaskManager> {
               itemCount: tasks.length,
               itemBuilder: (context, index) {
                 return ListTile(
-                  title: Text('Zadanie: ${tasks[index].name}\nStatus: ${tasks[index].status}'),
+                  title: Text('Zadanie: ${tasks[index].name}\nStatus: ${tasks[index].status}'), // Wyświetlanie nazwy zadania i statusu
                   trailing: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
@@ -107,16 +107,16 @@ class _TaskManagerState extends State<TaskManager> {
                           );
                         }).toList(),
                         onChanged: (String newStatus) {
-                          changeStatus(index, newStatus);
+                          changeStatus(index, newStatus); // Zmiana statusu zadania
                         },
                       ),
                       IconButton(
                         icon: Icon(Icons.edit),
-                        onPressed: () => editTask(index),
+                        onPressed: () => editTask(index), // Rozpoczęcie edycji zadania
                       ),
                       IconButton(
                         icon: Icon(Icons.delete),
-                        onPressed: () => removeTask(index),
+                        onPressed: () => removeTask(index), // Usunięcie zadania
                       ),
                     ],
                   ),
