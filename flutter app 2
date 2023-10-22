@@ -15,23 +15,33 @@ class MyApp extends StatelessWidget {
   }
 }
 
+class Task {
+  String name;
+  String status;
+
+  Task(this.name, this.status);
+}
+
 class TaskManager extends StatefulWidget {
   @override
   _TaskManagerState createState() => _TaskManagerState();
 }
 
 class _TaskManagerState extends State<TaskManager> {
-  List<String> tasks = [];
+  List<Task> tasks = [];
   TextEditingController taskController = TextEditingController();
   TextEditingController editTaskController = TextEditingController();
+  TextEditingController statusController = TextEditingController();
   int editingIndex = -1;
 
   void addTask() {
     setState(() {
-      String newTask = taskController.text;
-      if (newTask.isNotEmpty) {
-        tasks.add(newTask);
+      String newTaskName = taskController.text;
+      String newTaskStatus = statusController.text;
+      if (newTaskName.isNotEmpty) {
+        tasks.add(Task(newTaskName, newTaskStatus));
         taskController.clear();
+        statusController.clear();
       }
     });
   }
@@ -39,13 +49,13 @@ class _TaskManagerState extends State<TaskManager> {
   void editTask(int index) {
     setState(() {
       editingIndex = index;
-      editTaskController.text = tasks[index];
+      editTaskController.text = tasks[index].name;
     });
   }
 
   void saveEditedTask(int index) {
     setState(() {
-      tasks[index] = editTaskController.text;
+      tasks[index].name = editTaskController.text;
       editingIndex = -1;
       editTaskController.clear();
     });
@@ -76,6 +86,13 @@ class _TaskManagerState extends State<TaskManager> {
               decoration: InputDecoration(labelText: 'Dodaj nowe zadanie'),
             ),
           ),
+          Padding(
+            padding: const EdgeInsets.all(10.0),
+            child: TextField(
+              controller: statusController,
+              decoration: InputDecoration(labelText: 'Dodaj status'),
+            ),
+          ),
           ElevatedButton(
             onPressed: addTask,
             child: Text('Dodaj zadanie'),
@@ -90,7 +107,7 @@ class _TaskManagerState extends State<TaskManager> {
                           controller: editTaskController,
                           onEditingComplete: () => saveEditedTask(index),
                         )
-                      : Text(tasks[index]),
+                      : Text('Zadanie: ${tasks[index].name}\nStatus: ${tasks[index].status}'),
                   trailing: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
