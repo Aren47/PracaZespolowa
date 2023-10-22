@@ -6,20 +6,20 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Task Manager', // Tytuł aplikacji
+      title: 'Task Manager',
       theme: ThemeData(
-        primarySwatch: Colors.blue, // Kolor przewodni aplikacji
+        primarySwatch: Colors.blue,
       ),
-      home: TaskManager(), // Ekran główny
+      home: TaskManager(),
     );
   }
 }
 
 class Task {
-  String name;   // Nazwa zadania
-  String status; // Status zadania
+  String name;
+  String status;
 
-  Task(this.name, this.status); // Konstruktor dla obiektu Task
+  Task(this.name, this.status);
 }
 
 class TaskManager extends StatefulWidget {
@@ -28,44 +28,46 @@ class TaskManager extends StatefulWidget {
 }
 
 class _TaskManagerState extends State<TaskManager> {
-  List<Task> tasks = []; // Lista zadan
-  TextEditingController taskController = TextEditingController(); // Kontroler pola tekstowego
-  int editingIndex = -1; // Indeks zadania podczas edycji (domyślnie brak edycji)
+  List<Task> tasks = [];
+  TextEditingController taskController = TextEditingController();
+  TextEditingController editTaskController = TextEditingController();
+  TextEditingController statusController = TextEditingController();
+  int editingIndex = -1;
 
   void addTask() {
     setState(() {
       String newTaskName = taskController.text;
+      String newTaskStatus = statusController.text;
       if (newTaskName.isNotEmpty) {
-        tasks.add(Task(newTaskName, 'Nowy')); // Dodaj nowe zadanie do listy
-        taskController.clear(); // Wyczyść pole tekstowe po dodaniu zadania
+        tasks.add(Task(newTaskName, newTaskStatus));
+        taskController.clear();
+        statusController.clear();
       }
     });
   }
 
   void editTask(int index) {
     setState(() {
-      editingIndex = index; // Rozpocznij edycję zadania o określonym indeksie
+      editingIndex = index;
+      editTaskController.text = tasks[index].name;
     });
   }
 
   void saveEditedTask(int index) {
     setState(() {
-      editingIndex = -1; // Zakończ edycję zadania
+      tasks[index].name = editTaskController.text;
+      editingIndex = -1;
+      editTaskController.clear();
     });
   }
 
   void removeTask(int index) {
     setState(() {
-      tasks.removeAt(index); // Usuń zadanie na podstawie indeksu
+      tasks.removeAt(index);
       if (editingIndex == index) {
-        editingIndex = -1; // Jeśli edytowane zadanie jest usuwane, zakończ edycję
+        editingIndex = -1;
+        editTaskController.clear();
       }
-    });
-  }
-
-  void changeStatus(int index, String newStatus) {
-    setState(() {
-      tasks[index].status = newStatus; // Zmień status zadania
     });
   }
 
@@ -73,7 +75,7 @@ class _TaskManagerState extends State<TaskManager> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Task Manager'), // Tytuł paska nawigacyjnego
+        title: Text('Task Manager'),
       ),
       body: Column(
         children: <Widget>[
@@ -81,11 +83,18 @@ class _TaskManagerState extends State<TaskManager> {
             padding: const EdgeInsets.all(10.0),
             child: TextField(
               controller: taskController,
-              decoration: InputDecoration(labelText: 'Dodaj nowe zadanie'), // Pole tekstowe do dodawania zadań
+              decoration: InputDecoration(labelText: 'Dodaj nowe zadanie'),
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.all(10.0),
+            child: TextField(
+              controller: statusController,
+              decoration: InputDecoration(labelText: 'Dodaj status'),
             ),
           ),
           ElevatedButton(
-            onPressed: addTask, // Przycisk "Dodaj zadanie" wywołuje funkcję addTask
+            onPressed: addTask,
             child: Text('Dodaj zadanie'),
           ),
           Expanded(
@@ -93,30 +102,22 @@ class _TaskManagerState extends State<TaskManager> {
               itemCount: tasks.length,
               itemBuilder: (context, index) {
                 return ListTile(
-                  title: Text('Zadanie: ${tasks[index].name}\nStatus: ${tasks[index].status}'), // Wyświetlanie nazwy zadania i statusu
+                  title: editingIndex == index
+                      ? TextField(
+                          controller: editTaskController,
+                          onEditingComplete: () => saveEditedTask(index),
+                        )
+                      : Text('Zadanie: ${tasks[index].name}\nStatus: ${tasks[index].status}'),
                   trailing: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      DropdownButton<String>(
-                        value: tasks[index].status,
-                        items: ['Nowy', 'W trakcie', 'Zaakceptowany', 'Ukończony']
-                            .map((String status) {
-                          return DropdownMenuItem<String>(
-                            value: status,
-                            child: Text(status),
-                          );
-                        }).toList(),
-                        onChanged: (String newStatus) {
-                          changeStatus(index, newStatus); // Zmiana statusu zadania
-                        },
-                      ),
                       IconButton(
                         icon: Icon(Icons.edit),
-                        onPressed: () => editTask(index), // Rozpoczęcie edycji zadania
+                        onPressed: () => editTask(index),
                       ),
                       IconButton(
                         icon: Icon(Icons.delete),
-                        onPressed: () => removeTask(index), // Usunięcie zadania
+                        onPressed: () => removeTask(index),
                       ),
                     ],
                   ),
