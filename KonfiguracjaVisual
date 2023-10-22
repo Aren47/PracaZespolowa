@@ -1,0 +1,12 @@
+Uruchom flutter doctor: W terminalu lub konsoli, uruchom polecenie flutter doctor. To narzędzie sprawdzi konfigurację Twojego środowiska Flutter i wyświetli ewentualne problemy oraz sugestie dotyczące rozwiązania tych problemów.
+
+Zainstaluj Visual Studio: Upewnij się, że masz zainstalowaną wersję Visual Studio, która jest zgodna z Flutter. W przypadku Android, często jest to Visual Studio z zestawem narzędzi Android (Android Studio). Możesz pobrać i zainstalować Android Studio ze strony Android Studio Download.
+
+Sprawdź zmienne środowiskowe:
+
+Upewnij się, że zmienne środowiskowe, takie jak ANDROID_HOME, ANDROID_SDK_ROOT, ANDROID_NDK_ROOT, JAVA_HOME, są ustawione prawidłowo w Twoim systemie. Te zmienne są istotne dla poprawnej kompilacji i budowy aplikacji Flutter.
+Aktualizacja Flutter i Dart: Czasami błąd ten może być związany z przestarzałym Flutter lub Dart. Upewnij się, że masz najnowszą wersję Flutter i Dart, wykonując polecenia flutter upgrade i flutter pub upgrade.
+
+Konfiguracja Visual Studio Code: Jeśli korzystasz z Visual Studio Code jako środowiska deweloperskiego, sprawdź, czy masz zainstalowane odpowiednie rozszerzenia, takie jak "Dart" i "Flutter". Możesz także sprawdzić ustawienia konfiguracji w Visual Studio Code, aby upewnić się, że wszystko jest skonfigurowane prawidłowo.
+
+Przeinstaluj Flutter i Dart SDK: W przypadku, gdy żadne z powyższych kroków nie działa, możesz spróbować przeinstalować Flutter i Dart SDK od podstaw, zgodnie z oficjalnymi instrukcjami na stronie Flutter.
