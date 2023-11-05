@@ -1,0 +1,170 @@
+import 'package:flutter/material.dart';
+
+void main() => runApp(MyApp());
+
+class Task {
+  String title;
+  String status;
+
+  Task(this.title, this.status);
+}
+
+class MyApp extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      title: 'Task Manager',
+      theme: ThemeData.dark(),
+      home: TaskManager(),
+    );
+  }
+}
+
+class TaskManager extends StatefulWidget {
+  @override
+  _TaskManagerState createState() => _TaskManagerState();
+}
+
+class _TaskManagerState extends State<TaskManager> {
+  List<Task> tasks = [];
+  TextEditingController taskController = TextEditingController();
+
+  void addTask(String newTask) {
+    setState(() {
+      if (newTask.isNotEmpty) {
+        tasks.add(Task(newTask, "Pending"));
+        taskController.clear();
+      }
+    });
+  }
+
+  void removeTask(int index) {
+    setState(() {
+      tasks.removeAt(index);
+    });
+  }
+
+  void changeTaskStatus(int index, String newStatus) {
+    setState(() {
+      tasks[index].status = newStatus;
+    });
+  }
+
+  void editTaskTitle(int index, String newTitle) {
+    setState(() {
+      tasks[index].title = newTitle;
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('Task Manager'),
+      ),
+      body: Column(
+        children: <Widget>[
+          Padding(
+            padding: const EdgeInsets.all(10.0),
+            child: TextField(
+              controller: taskController,
+              decoration: InputDecoration(labelText: 'Dodaj nowe zadanie'),
+            ),
+          ),
+          ElevatedButton(
+            onPressed: () => addTask(taskController.text),
+            child: Text('Dodaj zadanie'),
+          ),
+          Expanded(
+            child: ListView.builder(
+              itemCount: tasks.length,
+              itemBuilder: (context, index) {
+                return ListTile(
+                  title: Text(tasks[index].title),
+                  subtitle: Text(tasks[index].status),
+                  trailing: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: <Widget>[
+                      IconButton(
+                        icon: Icon(Icons.edit),
+                        onPressed: () {
+                          _editTaskTitleDialog(context, index);
+                        },
+                      ),
+                      IconButton(
+                        icon: Icon(Icons.delete),
+                        onPressed: () => removeTask(index),
+                      ),
+                    ],
+                  ),
+                  onTap: () {
+                    _showTaskDialog(context, index);
+                  },
+                );
+              },
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _showTaskDialog(BuildContext context, int index) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text("Zmień status zadania"),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: <Widget>[
+              ElevatedButton(
+                onPressed: () {
+                  changeTaskStatus(index, "In Progress");
+                  Navigator.of(context).pop();
+                },
+                child: Text('W trakcie'),
+              ),
+              ElevatedButton(
+                onPressed: () {
+                  changeTaskStatus(index, "Completed");
+                  Navigator.of(context).pop();
+                },
+                child: Text('Zakończone'),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  void _editTaskTitleDialog(BuildContext context, int index) {
+    String newTitle = tasks[index].title;
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text("Edytuj tytuł zadania"),
+          content: TextField(
+            controller: TextEditingController(text: tasks[index].title),
+            onChanged: (value) {
+              newTitle = value;
+            },
+          ),
+          actions: <Widget>[
+            TextButton(
+              child: Text('Zapisz'),
+              onPressed: () {
+                if (newTitle.isNotEmpty) {
+                  editTaskTitle(index, newTitle);
+                  Navigator.of(context).pop();
+                }
+              },
+            ),
+          ],
+        );
+      },
+    );
+  }
+}
