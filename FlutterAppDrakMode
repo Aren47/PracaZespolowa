@@ -5,8 +5,10 @@ void main() => runApp(MyApp());
 class Task {
   String title;
   String status;
+  DateTime? dueDate;
+  DateTime? completionDate;
 
-  Task(this.title, this.status);
+  Task(this.title, this.status, {this.dueDate, this.completionDate});
 }
 
 class MyApp extends StatelessWidget {
@@ -28,12 +30,18 @@ class TaskManager extends StatefulWidget {
 class _TaskManagerState extends State<TaskManager> {
   List<Task> tasks = [];
   TextEditingController taskController = TextEditingController();
+  TextEditingController dueDateController = TextEditingController();
+  TextEditingController completionDateController = TextEditingController();
+  TextEditingController statusController = TextEditingController();
 
-  void addTask(String newTask) {
+  void addTask(String newTask, DateTime? dueDate, DateTime? completionDate, String newStatus) {
     setState(() {
       if (newTask.isNotEmpty) {
-        tasks.add(Task(newTask, "Pending"));
+        tasks.add(Task(newTask, newStatus, dueDate: dueDate, completionDate: completionDate));
         taskController.clear();
+        dueDateController.clear();
+        completionDateController.clear();
+        statusController.clear();
       }
     });
   }
@@ -44,16 +52,102 @@ class _TaskManagerState extends State<TaskManager> {
     });
   }
 
-  void changeTaskStatus(int index, String newStatus) {
+  void editTask(int index, String newTitle, DateTime? newDueDate, DateTime? newCompletionDate, String newStatus) {
+    setState(() {
+      final task = tasks[index];
+      task.title = newTitle;
+      task.dueDate = newDueDate;
+      task.completionDate = newCompletionDate;
+      task.status = newStatus;
+    });
+  }
+
+  void changeStatus(int index, String newStatus) {
     setState(() {
       tasks[index].status = newStatus;
     });
   }
 
-  void editTaskTitle(int index, String newTitle) {
-    setState(() {
-      tasks[index].title = newTitle;
-    });
+  void _editTaskDialog(BuildContext context, int index) {
+    String newTitle = tasks[index].title;
+    String newDueDate = tasks[index].dueDate != null ? tasks[index].dueDate.toString() : '';
+    String newCompletionDate = tasks[index].completionDate != null ? tasks[index].completionDate.toString() : '';
+    String newStatus = tasks[index].status;
+
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text("Edytuj zadanie"),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: <Widget>[
+              TextField(
+                controller: taskController,
+                decoration: InputDecoration(labelText: 'Nowy tytuł zadania'),
+              ),
+              TextField(
+                controller: dueDateController,
+                decoration: InputDecoration(labelText: 'Nowa data rozpoczęcia zadania (yyyy-MM-dd)'),
+              ),
+              TextField(
+                controller: completionDateController,
+                decoration: InputDecoration(labelText: 'Nowa data zakończenia zadania (yyyy-MM-dd)'),
+              ),
+              TextField(
+                controller: statusController,
+                decoration: InputDecoration(labelText: 'Nowy status zadania'),
+              ),
+            ],
+          ),
+          actions: <Widget>[
+            TextButton(
+              child: Text('Zapisz'),
+              onPressed: () {
+                final newDueDateValue = DateTime.tryParse(dueDateController.text);
+                final newCompletionDateValue = DateTime.tryParse(completionDateController.text);
+                final newTitleValue = taskController.text;
+                final newStatusValue = statusController.text;
+
+                editTask(index, newTitleValue, newDueDateValue, newCompletionDateValue, newStatusValue);
+
+                Navigator.of(context).pop();
+              },
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  void _showTaskDialog(BuildContext context, int index) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text("Zmień status zadania"),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: <Widget>[
+              ElevatedButton(
+                onPressed: () {
+                  changeStatus(index, "In Progress");
+                  Navigator.of(context).pop();
+                },
+                child: Text('W trakcie'),
+              ),
+              ElevatedButton(
+                onPressed: () {
+                  changeStatus(index, "Completed");
+                  Navigator.of(context).pop();
+                },
+                child: Text('Zakończone'),
+              ),
+            ],
+          ),
+        );
+      },
+    );
   }
 
   @override
@@ -71,8 +165,34 @@ class _TaskManagerState extends State<TaskManager> {
               decoration: InputDecoration(labelText: 'Dodaj nowe zadanie'),
             ),
           ),
+          Padding(
+            padding: const EdgeInsets.all(10.0),
+            child: TextField(
+              controller: dueDateController,
+              decoration: InputDecoration(labelText: 'Data rozpoczęcia zadania (yyyy-MM-dd)'),
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.all(10.0),
+            child: TextField(
+              controller: completionDateController,
+              decoration: InputDecoration(labelText: 'Data zakończenia zadania (yyyy-MM-dd)'),
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.all(10.0),
+            child: TextField(
+              controller: statusController,
+              decoration: InputDecoration(labelText: 'Status zadania'),
+            ),
+          ),
           ElevatedButton(
-            onPressed: () => addTask(taskController.text),
+            onPressed: () => addTask(
+              taskController.text,
+              DateTime.tryParse(dueDateController.text),
+              DateTime.tryParse(completionDateController.text),
+              statusController.text,
+            ),
             child: Text('Dodaj zadanie'),
           ),
           Expanded(
@@ -81,14 +201,14 @@ class _TaskManagerState extends State<TaskManager> {
               itemBuilder: (context, index) {
                 return ListTile(
                   title: Text(tasks[index].title),
-                  subtitle: Text(tasks[index].status),
+                  subtitle: Text('Data rozpoczęcia: ${tasks[index].dueDate}, Data zakończenia: ${tasks[index].completionDate}, Status: ${tasks[index].status}'),
                   trailing: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: <Widget>[
                       IconButton(
                         icon: Icon(Icons.edit),
                         onPressed: () {
-                          _editTaskTitleDialog(context, index);
+                          _editTaskDialog(context, index);
                         },
                       ),
                       IconButton(
@@ -106,65 +226,6 @@ class _TaskManagerState extends State<TaskManager> {
           ),
         ],
       ),
-    );
-  }
-
-  void _showTaskDialog(BuildContext context, int index) {
-    showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: Text("Zmień status zadania"),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: <Widget>[
-              ElevatedButton(
-                onPressed: () {
-                  changeTaskStatus(index, "In Progress");
-                  Navigator.of(context).pop();
-                },
-                child: Text('W trakcie'),
-              ),
-              ElevatedButton(
-                onPressed: () {
-                  changeTaskStatus(index, "Completed");
-                  Navigator.of(context).pop();
-                },
-                child: Text('Zakończone'),
-              ),
-            ],
-          ),
-        );
-      },
-    );
-  }
-
-  void _editTaskTitleDialog(BuildContext context, int index) {
-    String newTitle = tasks[index].title;
-    showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: Text("Edytuj tytuł zadania"),
-          content: TextField(
-            controller: TextEditingController(text: tasks[index].title),
-            onChanged: (value) {
-              newTitle = value;
-            },
-          ),
-          actions: <Widget>[
-            TextButton(
-              child: Text('Zapisz'),
-              onPressed: () {
-                if (newTitle.isNotEmpty) {
-                  editTaskTitle(index, newTitle);
-                  Navigator.of(context).pop();
-                }
-              },
-            ),
-          ],
-        );
-      },
     );
   }
 }
